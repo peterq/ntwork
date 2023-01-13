@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from typing import List
+
 import uvicorn
 from functools import wraps
 from fastapi import FastAPI
@@ -47,8 +49,8 @@ app = FastAPI(title="NtWork fastapi完整示例",
 @app.post("/client/create", summary="创建实例", tags=["Client"],
           response_model=models.ResponseModel)
 @catch_exception()
-async def client_create():
-    guid = client_mgr.create_client()
+async def client_create(model: models.ClientCreateReqModel):
+    guid = client_mgr.create_client(guid=model.guid)
     return response_json(1, {"guid": guid})
 
 
@@ -56,8 +58,18 @@ async def client_create():
           response_model=models.ResponseModel)
 @catch_exception()
 async def client_open(model: models.ClientOpenReqModel):
-    ret = client_mgr.get_client(model.guid).open(model.smart)
-    return response_json(1 if ret else 0)
+    cli = client_mgr.get_client(model.guid)
+    if not cli.pid:
+        ret = cli.open(model.smart)
+        return response_json(1 if ret else 0)
+    return response_json(1)
+
+
+@app.get("/client/list", summary="列出实例列表", tags=["Client"],
+         response_model=models.ResponseModel)
+@catch_exception()
+async def client_list():
+    return response_json(1, client_mgr.client_list())
 
 
 @app.post("/global/set_callback_url", summary="设置接收通知地址", tags=["Global"],
@@ -195,4 +207,4 @@ async def send_gif(model: models.SendMediaReqModel):
 
 
 if __name__ == '__main__':
-    uvicorn.run(app=app)
+    uvicorn.run(app=app, host="0.0.0.0")

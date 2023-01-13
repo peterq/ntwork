@@ -13,7 +13,7 @@ class ClientWeWork(ntwork.WeWork):
 
 class ClientManager(metaclass=Singleton):
     __client_map: Dict[str, ntwork.WeWork] = {}
-    callback_url: str = ""
+    callback_url: str = "http://127.0.0.1:9623/puppeteer_callback"
 
     def new_guid(self):
         """
@@ -24,8 +24,12 @@ class ClientManager(metaclass=Singleton):
             if guid not in self.__client_map:
                 return guid
 
-    def create_client(self):
-        guid = self.new_guid()
+    def create_client(self, guid: str = '') -> str:
+        if not guid:
+            guid = self.new_guid()
+        else:
+            if guid in self.__client_map:
+                return guid
         wework = ClientWeWork()
         wework.guid = guid
         self.__client_map[guid] = wework
@@ -40,6 +44,9 @@ class ClientManager(metaclass=Singleton):
         if client is None:
             raise ClientNotExists(guid)
         return client
+
+    def client_list(self):
+        return list(self.__client_map.keys())
 
     def remove_client(self, guid):
         if guid in self.__client_map:

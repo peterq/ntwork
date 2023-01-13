@@ -12,6 +12,10 @@ class ResponseModel(BaseModel):
     data: Optional[Any] = None
 
 
+class ClientCreateReqModel(ClientReqModel):
+    guid: Optional[str] = ""
+
+
 class ClientOpenReqModel(ClientReqModel):
     smart: Optional[bool] = True
     show_login_qrcode: Optional[bool] = False
